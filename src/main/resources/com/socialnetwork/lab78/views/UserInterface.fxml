@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox prefHeight="444.0" prefWidth="348.0" spacing="10" stylesheets="@../css/style.css" xmlns="http://javafx.com/javafx/17.0.2-ea" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.socialnetwork.lab78.controller.UserController">
+
+    <TableView fx:id="usersTable" prefHeight="500.0" prefWidth="328.0">
+        <columns>
+            <TableColumn fx:id="idColumn" maxWidth="6000.0" text="ID" />
+            <TableColumn fx:id="firstNameColumn" maxWidth="6000.0" text="First Name" />
+            <TableColumn fx:id="lastNameColumn" maxWidth="6000.0" text="Last Name" />
+        </columns>
+    </TableView>
+
+    <HBox spacing="5">
+        <Label text="First Name:">
+         <padding>
+            <Insets top="6.0" />
+         </padding></Label>
+        <TextField fx:id="firstNameField" alignment="TOP_LEFT" prefHeight="30.0" prefWidth="250.0" />
+    </HBox>
+    <HBox spacing="5">
+        <Label prefWidth="67.0" text="Last Name:">
+         <padding>
+            <Insets top="6.0" />
+         </padding></Label>
+        <TextField fx:id="lastNameField" prefHeight="30.0" prefWidth="250.0" />
+    </HBox>
+
+    <HBox alignment="BOTTOM_CENTER" spacing="10.0">
+        <Button fx:id="addButton" onAction="#addUser" prefHeight="26.0" prefWidth="90.0" text="Add">
+            <HBox.margin>
+                <Insets />
+            </HBox.margin>
+        </Button>
+        <Button fx:id="updateButton" onAction="#updateUser" prefWidth="90.0" text="Update" /> <!-- Added Update button -->
+        <Button fx:id="deleteButton" onAction="#deleteUser" prefWidth="90.0" text="Delete" />
+        <Button fx:id="generareButton" onAction="#generareUseri" prefWidth="90.0" text="Generate" />
+        <VBox.margin>
+            <Insets top="100.0" />
+        </VBox.margin>
+    </HBox>
+
+</VBox>

@@ -1,0 +1,37 @@
+VBox {
+    -fx-background-color: #f4f4f4; /* gri deschis */
+    -fx-padding: 10;
+}
+
+TableView {
+    -fx-pref-height: 400;
+    -fx-max-width: 400;
+}
+
+HBox {
+    -fx-spacing: 10;
+}
+
+Label {
+    -fx-font-weight: bold;
+}
+
+TextField {
+    -fx-font-size: 14;
+}
+
+Button {
+    -fx-background-color: #4CAF50; /* verde */
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+}
+
+/* Culori adiționale pentru experimentare */
+
+Button:hover {
+    -fx-background-color: #45a049; /* verde mai închis la hover */
+}
+
+Button:pressed {
+    -fx-background-color: #36723e; /* verde închis la apăsare */
+}
