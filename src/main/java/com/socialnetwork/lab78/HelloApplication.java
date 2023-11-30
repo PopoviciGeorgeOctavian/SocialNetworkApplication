@@ -1,5 +1,6 @@
 package com.socialnetwork.lab78;
 
+import com.socialnetwork.lab78.Paging.PagingRepository;
 import com.socialnetwork.lab78.controller.UserController;
 import com.socialnetwork.lab78.domain.FriendShip;
 import com.socialnetwork.lab78.domain.User;
@@ -19,7 +20,7 @@ public class HelloApplication extends Application {
 
     @Override
     public void start(Stage stage) throws Exception {
-        Repository<UUID, User> userRepo = new UserDBRepository("jdbc:postgresql://localhost:5432/socialnetwork", "postgres", "George100");
+        PagingRepository<UUID, User> userRepo = new UserDBRepository("jdbc:postgresql://localhost:5432/socialnetwork", "postgres", "George100");
         Repository<UUID, FriendShip> friendshipRepo = new FriendShipDBRepository("jdbc:postgresql://localhost:5432/socialnetwork", "postgres", "George100");
         Service service = new Service(userRepo, friendshipRepo);
         try {

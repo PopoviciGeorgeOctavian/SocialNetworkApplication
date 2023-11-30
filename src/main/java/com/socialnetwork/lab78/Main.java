@@ -2,6 +2,7 @@ package com.socialnetwork.lab78;
 
 
 
+import com.socialnetwork.lab78.Paging.PagingRepository;
 import com.socialnetwork.lab78.domain.FriendShip;
 import com.socialnetwork.lab78.domain.User;
 import com.socialnetwork.lab78.repository.FriendShipDBRepository;
@@ -15,7 +16,7 @@ import java.util.UUID;
 public class Main {
     public static void main(String[] args) {
 
-        Repository<UUID, User> userRepo = new UserDBRepository("jdbc:postgresql://localhost:5432/socialnetwork", "postgres", "George100");
+        PagingRepository<UUID, User> userRepo = new UserDBRepository("jdbc:postgresql://localhost:5432/socialnetwork", "postgres", "George100");
         Repository<UUID, FriendShip> friendshipRepo = new FriendShipDBRepository("jdbc:postgresql://localhost:5432/socialnetwork", "postgres", "George100");
         Service service = new Service(userRepo, friendshipRepo);
 

@@ -4,6 +4,9 @@ package com.socialnetwork.lab78.service;
 
 
 
+import com.socialnetwork.lab78.Paging.Page;
+import com.socialnetwork.lab78.Paging.Pageable;
+import com.socialnetwork.lab78.Paging.PagingRepository;
 import com.socialnetwork.lab78.domain.FriendRequest;
 import com.socialnetwork.lab78.domain.FriendShip;
 import com.socialnetwork.lab78.domain.User;
@@ -24,15 +27,20 @@ import static com.socialnetwork.lab78.domain.FriendRequest.ACCEPTED;
 public class Service implements Observable<UserChangeEvent> {
 
     //private InMemoryRepository<UUID, User> UserRepo;
-    private Repository<UUID, User> UserRepo;
+    private PagingRepository<UUID, User> UserRepo;
     //private InMemoryRepository<UUID, FriendShip> FriendShipRepo;
     private Repository<UUID, FriendShip> FriendShipRepo;
 
+    final private List<Observer<UserChangeEvent>> observers = new ArrayList<>();
     //Constructor
     // public Service(InMemoryRepository<UUID, User> UserRepo, InMemoryRepository<UUID, FriendShip> FriendShipRepo) {
-    public Service(Repository<UUID, User> UserRepo, Repository<UUID, FriendShip> FriendShipRepo) {
+    public Service(PagingRepository<UUID, User> UserRepo, Repository<UUID, FriendShip> FriendShipRepo) {
         this.UserRepo = UserRepo;
         this.FriendShipRepo = FriendShipRepo;
+    }
+
+    public  Page<User>  findAll(Pageable pageable) {
+        return UserRepo.findAll(pageable);
     }
 
     //Adauga user
@@ -350,7 +358,7 @@ public class Service implements Observable<UserChangeEvent> {
     }
 
 
-    private List<Observer<UserChangeEvent>> observers = new ArrayList<>();
+
     @Override
     public void addObserver(Observer<UserChangeEvent> o) {observers.add(o);
 

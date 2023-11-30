@@ -1,5 +1,7 @@
 package com.socialnetwork.lab78.controller;
 
+import com.socialnetwork.lab78.Paging.Page;
+import com.socialnetwork.lab78.Paging.Pageable;
 import com.socialnetwork.lab78.domain.User;
 import com.socialnetwork.lab78.service.MessageService;
 import com.socialnetwork.lab78.service.Service;
@@ -8,20 +10,30 @@ import com.socialnetwork.lab78.utils.observer.Observer;
 import com.socialnetwork.lab78.utils.observer.UserChangeEvent;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
 import static com.socialnetwork.lab78.controller.MessageAlert.showMessage;
 
-public class UserController {
+public class UserController implements Observer<UserChangeEvent>{
 
    Service service;
 
     private MessageService messageService;
+
+    private int currentPage = 0;
+
+    private int pageSize = 12;
+
+    private int totalNumberOfElements = 0;
 
 
     public MessageService getMessageService() {
@@ -48,16 +60,34 @@ public class UserController {
     private TextField firstNameField, lastNameField;
 
     @FXML
-    private Button addButton, deleteButton;
+    private Button addButton, deleteButton, nextButton, previousButton;
 
     @FXML
     public void setService(Service serviceUsers){
-        service = serviceUsers;
-        initializeTable();
+        this.service = serviceUsers;
+        service.addObserver(this);
         loadUsers();
 
     }
 
+    private void initModel()
+    {
+
+        Page<User> page = service.findAll(new Pageable(currentPage, pageSize));
+
+        int maxPage = (int) Math.ceil((double) page.getTotalElementCount() / pageSize)-1;
+        if(currentPage > maxPage){
+            currentPage = maxPage;
+            page = service.findAll(new Pageable(currentPage, pageSize));
+        }
+
+        users.setAll(StreamSupport.stream(page.getElementsOnPage().spliterator(),
+                false).collect(Collectors.toList()));
+        totalNumberOfElements=page.getTotalElementCount();
+
+        previousButton.setDisable(currentPage == 0);
+        nextButton.setDisable((currentPage+1)*pageSize >+ totalNumberOfElements);
+    }
 
     private void loadUsers() {
         users.clear();
@@ -74,7 +104,7 @@ public class UserController {
     }
 
     @FXML
-    private void addUser() {
+    private void addUser(ActionEvent actionEvent) {
         try {
             String firstName = firstNameField.getText();
             String lastName = lastNameField.getText();
@@ -103,7 +133,7 @@ public class UserController {
 
 
     @FXML
-    private void deleteUser() {
+    private void deleteUser(ActionEvent actionEvent) {
         try {
             User selectedUser = usersTable.getSelectionModel().getSelectedItem();
             if (selectedUser != null) {
@@ -119,7 +149,7 @@ public class UserController {
     }
 
     @FXML
-    private void updateUser() {
+    private void updateUser(ActionEvent actionEvent) {
         try {
             User selectedUser = usersTable.getSelectionModel().getSelectedItem();
             if (selectedUser != null) {
@@ -136,11 +166,25 @@ public class UserController {
     }
 
     @FXML
-    private void generareUseri()
+    private void generareUseri(ActionEvent actionEvent)
     {
         users.clear();
         service.addEntities();
         loadUsers();
     }
 
+    @Override
+    public void update(UserChangeEvent t) {
+        initModel();
+    }
+
+    public void onPrevious(ActionEvent actionEvent){
+        currentPage--;
+        initModel();
+    }
+
+    public void onNext(ActionEvent actionEvent){
+        currentPage++;
+        initModel();
+    }
 }
