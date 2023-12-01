@@ -45,13 +45,13 @@ public class UserDBRepository implements PagingRepository<UUID, User> {
     public Page<User> findAll(Pageable pageable) {
         List<User> listaUseri = new ArrayList<>();
         try(Connection connection = DriverManager.getConnection(url,user,password);
-            PreparedStatement pagePreparedStatement  = connection.prepareStatement("SELECT * FROM Utilizatori" + "LIMIT ? OFFSET ?");
+            PreparedStatement pagePreparedStatement  = connection.prepareStatement("SELECT * FROM Utilizatori " + "LIMIT ? OFFSET ?");
             PreparedStatement countPreparedStatement = connection.prepareStatement("SELECT COUNT(*) AS count FROM Utilizatori");
         ){
             pagePreparedStatement.setInt(1, pageable.getPageSize());
             pagePreparedStatement.setInt(2, pageable.getPageSize() * pageable.getPageNumber());
             try(ResultSet pageResultSet = pagePreparedStatement.executeQuery();
-            ResultSet countResultSet = countPreparedStatement.executeQuery();) {
+                ResultSet countResultSet = countPreparedStatement.executeQuery();) {
                 while (pageResultSet.next()) {
                     UUID id = (UUID) pageResultSet.getObject("UUID");
                     String FirstName = pageResultSet.getString("FirstName");
