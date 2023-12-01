@@ -16,6 +16,7 @@ import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -31,9 +32,11 @@ public class UserController implements Observer<UserChangeEvent>{
 
     private int currentPage = 0;
 
-    private int pageSize = 12;
+    private int pageSize = 10;
 
     private int totalNumberOfElements = 0;
+
+    ObservableList<User> users = FXCollections.observableArrayList();
 
 
     public MessageService getMessageService() {
@@ -44,8 +47,6 @@ public class UserController implements Observer<UserChangeEvent>{
         this.messageService = messageService;
     }
 
-
-   ObservableList<User> users = FXCollections.observableArrayList();
 
 
     @FXML
@@ -66,7 +67,7 @@ public class UserController implements Observer<UserChangeEvent>{
     public void setService(Service serviceUsers){
         this.service = serviceUsers;
         service.addObserver(this);
-        loadUsers();
+        initModel();
 
     }
 
@@ -76,6 +77,10 @@ public class UserController implements Observer<UserChangeEvent>{
         Page<User> page = service.findAll(new Pageable(currentPage, pageSize));
 
         int maxPage = (int) Math.ceil((double) page.getTotalElementCount() / pageSize)-1;
+        if(maxPage == -1)
+        {
+            maxPage = 0;
+        }
         if(currentPage > maxPage){
             currentPage = maxPage;
             page = service.findAll(new Pageable(currentPage, pageSize));
@@ -87,20 +92,23 @@ public class UserController implements Observer<UserChangeEvent>{
 
         previousButton.setDisable(currentPage == 0);
         nextButton.setDisable((currentPage+1)*pageSize >+ totalNumberOfElements);
+        usersTable.refresh();
     }
 
-    private void loadUsers() {
+   /* private void loadUsers() {
         users.clear();
         Iterable<User> userIterable = service.getAllUseri();
         for (User user : userIterable) {
             users.add(user);
         }
     }
-    private void initializeTable() {
+*/
+    @FXML
+    private void initialize() {
+        usersTable.setItems(users);
         idColumn.setCellValueFactory(new PropertyValueFactory<>("id"));
         firstNameColumn.setCellValueFactory(new PropertyValueFactory<>("firstName"));
         lastNameColumn.setCellValueFactory(new PropertyValueFactory<>("lastName"));
-        usersTable.setItems(users);
     }
 
     @FXML
@@ -116,12 +124,16 @@ public class UserController implements Observer<UserChangeEvent>{
             }
 
             service.addUser(firstName, lastName);
-            loadUsers();
+            //loadUsers();
             clearForm();
+            usersTable.refresh();
+            initModel();
             MessageAlert.showMessage(null, Alert.AlertType.INFORMATION, "User Added", "User successfully added.");
         } catch (Exception e) {
             MessageAlert.showErrorMessage(null, "An error occurred: " + e.getMessage());
         }
+        usersTable.refresh();
+
     }
 
 
@@ -140,12 +152,16 @@ public class UserController implements Observer<UserChangeEvent>{
                 String firstName = selectedUser.getFirstName();
                 String lastName = selectedUser.getLastName();
                 service.deleteUser(firstName,lastName);
-                loadUsers();
+                //loadUsers();
                 MessageAlert.showMessage(null, Alert.AlertType.INFORMATION, "User Deleted", "User successfully deleted.");
+                usersTable.refresh();
+                initModel();
+
             }
         } catch (Exception e) {
             MessageAlert.showErrorMessage(null, "An error occurred: " + e.getMessage());
         }
+        initialize();
     }
 
     @FXML
@@ -157,21 +173,44 @@ public class UserController implements Observer<UserChangeEvent>{
                 String newLastName = lastNameField.getText();
                 UUID id=selectedUser.getId();
                 service.updateUser(id, newFirstName, newLastName);
-                loadUsers();
+                //loadUsers();
+                initModel();
                 MessageAlert.showMessage(null, Alert.AlertType.INFORMATION, "User Updated", "User successfully updated.");
+                usersTable.refresh();
+
+            }
+        } catch (Exception e) {
+            MessageAlert.showErrorMessage(null, "An error occurred: " + e.getMessage());
+        }
+        usersTable.refresh();
+    }
+
+    @FXML
+    private void generareUseri(ActionEvent actionEvent) {
+        try {
+            // Confirm user's intention to delete all data
+            Alert confirmationAlert = new Alert(Alert.AlertType.CONFIRMATION);
+            confirmationAlert.setTitle("Confirmation Dialog");
+            confirmationAlert.setHeaderText("Confirm Deletion");
+            confirmationAlert.setContentText("Are you sure you want to initialize data?");
+
+            Optional<ButtonType> result = confirmationAlert.showAndWait();
+
+            if (result.isPresent() && result.get() == ButtonType.OK) {
+                // User confirmed, delete all data and add new entities
+                for (User user : users) {
+                    service.deleteUser(user.getFirstName(), user.getLastName());
+                }
+
+                service.addEntities();
+                initModel();
+                MessageAlert.showMessage(null, Alert.AlertType.INFORMATION, "Data Cleared", "All data successfully deleted.");
             }
         } catch (Exception e) {
             MessageAlert.showErrorMessage(null, "An error occurred: " + e.getMessage());
         }
     }
 
-    @FXML
-    private void generareUseri(ActionEvent actionEvent)
-    {
-        users.clear();
-        service.addEntities();
-        loadUsers();
-    }
 
     @Override
     public void update(UserChangeEvent t) {

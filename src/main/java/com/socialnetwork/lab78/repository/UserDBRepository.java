@@ -45,7 +45,7 @@ public class UserDBRepository implements PagingRepository<UUID, User> {
     public Page<User> findAll(Pageable pageable) {
         List<User> listaUseri = new ArrayList<>();
         try(Connection connection = DriverManager.getConnection(url,user,password);
-            PreparedStatement pagePreparedStatement  = connection.prepareStatement("SELECT * FROM Utilizatori" + "LIMIT ? OFFSET ?");
+            PreparedStatement pagePreparedStatement  = connection.prepareStatement("SELECT * FROM Utilizatori " + "LIMIT ? OFFSET ?");
             PreparedStatement countPreparedStatement = connection.prepareStatement("SELECT COUNT(*) AS count FROM Utilizatori");
         ){
             pagePreparedStatement.setInt(1, pageable.getPageSize());
