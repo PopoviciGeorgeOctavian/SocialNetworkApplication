@@ -2,6 +2,7 @@ package com.socialnetwork.lab78.repository;
 
 
 import com.socialnetwork.lab78.domain.Entity;
+import com.socialnetwork.lab78.domain.Message;
 import com.socialnetwork.lab78.validators.ValidationException;
 
 import java.util.Optional;
@@ -50,6 +51,8 @@ public interface Repository<ID, E extends Entity<ID>> {
      * if the given id is null.
      */
     Optional<E> delete(ID id);
+
+
     /**
      *
      * @param entity

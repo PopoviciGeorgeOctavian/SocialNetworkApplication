@@ -7,6 +7,7 @@ package com.socialnetwork.lab78.service;
 import com.socialnetwork.lab78.Paging.Page;
 import com.socialnetwork.lab78.Paging.Pageable;
 import com.socialnetwork.lab78.Paging.PagingRepository;
+import com.socialnetwork.lab78.domain.Entity;
 import com.socialnetwork.lab78.domain.FriendRequest;
 import com.socialnetwork.lab78.domain.FriendShip;
 import com.socialnetwork.lab78.domain.User;
@@ -374,4 +375,45 @@ public class Service implements Observable<UserChangeEvent> {
         observers.forEach(o->o.update(t));
 
     }
+
+    public void acceptFriendship(String n1, String p1, String n2, String p2)
+    {
+        removeFriendShip(n1,p1,n2,p2);
+        addFriendShip(n1,p1,n2,p2);
+    }
+
+    public void declineFriendRequest(String n1, String p1, String n2, String p2) {
+        removeFriendShip(n1, p1, n2, p2);
+        try {
+            User u1 = getUserByNumePrenume(n1, p1);
+            User u2 = getUserByNumePrenume(n2, p2);
+            if (u1 == null || u2 == null || u1.equals(u2))
+                throw new ValidationException("Acesti useri nu sunt buni");
+            var FriendShip = new FriendShip(u1, u2, FriendRequest.REJECTED);
+            FriendShipRepo.save(FriendShip);
+            u1.addFriend(u2);
+            u2.addFriend(u1);
+
+        } catch (Exception e) {
+            System.err.println(e);
+        }
+    }
+
+    public void createFriendRequest(String n1, String p1, String n2, String p2) {
+        try {
+            User u1 = getUserByNumePrenume(n1, p1);
+            User u2 = getUserByNumePrenume(n2, p2);
+            if (u1 == null || u2 == null || u1.equals(u2))
+                throw new ValidationException("Acesti useri nu sunt buni");
+            var FriendShip = new FriendShip(u1, u2, FriendRequest.PENDING);
+            FriendShipRepo.save(FriendShip);
+            u1.addFriend(u2);
+            u2.addFriend(u1);
+
+        } catch (Exception e) {
+            System.err.println(e);
+        }
+
+    }
+
 }

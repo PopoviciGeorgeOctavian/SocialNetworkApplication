@@ -1,18 +1,25 @@
 package com.socialnetwork.lab78.service;
 
+import com.socialnetwork.lab78.Paging.PagingRepository;
+import com.socialnetwork.lab78.controller.MessageAlert;
 import com.socialnetwork.lab78.domain.Message;
+import com.socialnetwork.lab78.domain.User;
 import com.socialnetwork.lab78.repository.Repository;
+import com.socialnetwork.lab78.repository.UserDBRepository;
 
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.Optional;
-import java.util.UUID;
+import java.time.LocalDateTime;
+import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
 public class MessageService {
     private final Repository<UUID, Message> messageRepo;
 
-    public MessageService(Repository<UUID, Message> messageRepo) {
+    private final Repository<UUID, User> userRepo;
+
+    public MessageService(Repository<UUID, Message> messageRepo, Repository<UUID, User> userRepo) {
         this.messageRepo = messageRepo;
+        this.userRepo=userRepo;
     }
 
     public boolean addMessage(Message message) {
@@ -38,11 +45,55 @@ public class MessageService {
     }
 
     public Iterable<Message> getAllMessages() {
-        ArrayList<Message> messageList = new ArrayList<>();
-        messageRepo.findAll().forEach(messageList::add);
+        ArrayList<Message> l = new ArrayList<>((Collection) messageRepo.findAll());
 
-        messageList.sort(Comparator.comparing(Message::getDate));
+        l.sort(Comparator.comparing(Message::getData));
 
-        return messageList;
+        return l;
     }
+
+
+    public void addMessage(User from, List<User> to, String message) {
+        // Create a new message
+        Message newMessage = new Message(from, to, message, LocalDateTime.now());
+
+        // Save the new message
+        messageRepo.save(newMessage);
+
+        // Set reply for specific conditions
+        for (Message existingMessage : messageRepo.findAll()) {
+            if (to.contains(existingMessage.getFrom()) &&
+                    existingMessage.getTo().contains(from) &&
+                    existingMessage.getReply() == null) {
+
+                existingMessage.setReply(newMessage);
+                messageRepo.update(existingMessage);
+            }
+        }
+
+        System.out.println(newMessage);
+    }
+
+
+
+
+
+
+    public List<Message> conversation(UUID id1, UUID id2) {
+        User user1 = userRepo.findOne(id1).orElseThrow(() -> new IllegalArgumentException("User with id " + id1 + " not found"));
+        User user2 = userRepo.findOne(id2).orElseThrow(() -> new IllegalArgumentException("User with id " + id2 + " not found"));
+
+        return StreamSupport.stream(messageRepo.findAll().spliterator(), false)
+                .filter(msg -> isConversationMessage(msg, user1, user2))
+                .sorted(Comparator.comparing(Message::getData))
+                .collect(Collectors.toList());
+    }
+
+    private boolean isConversationMessage(Message message, User user1, User user2) {
+        return (message.getTo().contains(user2) && message.getFrom().equals(user1)) ||
+                (message.getTo().contains(user1) && message.getFrom().equals(user2));
+    }
+
+
+
 }

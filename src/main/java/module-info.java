@@ -12,6 +12,6 @@ module com.socialnetwork.lab78 {
     exports com.socialnetwork.lab78.domain;
     exports com.socialnetwork.lab78.repository;
     exports com.socialnetwork.lab78.service;
-
+    opens  com.socialnetwork.lab78.domain to javafx.base;
     opens com.socialnetwork.lab78 to javafx.fxml;
 }
