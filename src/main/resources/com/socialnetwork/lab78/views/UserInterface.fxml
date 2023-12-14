@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import javafx.geometry.*?>
+<?import javafx.scene.*?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.text.*?>
@@ -11,11 +12,10 @@
             <tabs>
                 <Tab text="Users">
                     <content>
-                        <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="618.0" prefWidth="963.0">
+                        <AnchorPane maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="0.0" minWidth="0.0" prefHeight="571.0" prefWidth="963.0">
                             <children>
-                                <VBox layoutX="7.0" layoutY="8.0" prefHeight="532.0" prefWidth="500.0" spacing="10" stylesheets="@../css/style.css">
-                                    <Text fx:id="username" layoutX="290.0" layoutY="236.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Popescu Marian" textAlignment="CENTER" wrappingWidth="133.9150848388672" AnchorPane.leftAnchor="282.0" AnchorPane.rightAnchor="282.0" />
-                                    <TableView fx:id="usersTable" maxWidth="447.0" prefHeight="234.0" prefWidth="447.0">
+                                <VBox layoutX="14.0" prefHeight="558.0" prefWidth="500.0" spacing="10" stylesheets="@../css/style.css">
+                                    <TableView fx:id="usersTable" maxWidth="360.0" prefHeight="375.0" prefWidth="400.0">
                                         <columns>
                                             <TableColumn fx:id="idColumn" maxWidth="6000.0" text="ID" />
                                             <TableColumn fx:id="firstNameColumn" maxWidth="6000.0" prefWidth="102.00000762939453" text="First Name" />
@@ -23,27 +23,31 @@
                                         </columns>
                                     </TableView>
 
-                                    <HBox alignment="CENTER_LEFT" spacing="10.0">
+                                    <HBox alignment="CENTER_LEFT" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" spacing="10.0">
                                         <Button fx:id="previousButton" onAction="#onPrevious" prefWidth="90.0" text="Previous" />
                                         <Button fx:id="nextButton" onAction="#onNext" prefWidth="90.0" text="Next" />
                                     </HBox>
 
                                     <HBox spacing="5">
-                                        <Label text="First Name:" />
+                                        <Label contentDisplay="BOTTOM" text="First Name:" />
                                         <TextField fx:id="firstNameField" alignment="TOP_LEFT" prefHeight="30.0" prefWidth="250.0" />
                                     </HBox>
 
                                     <HBox prefHeight="47.0" prefWidth="479.0" spacing="5">
                                         <Label prefHeight="0.0" prefWidth="63.0" text="Last Name:" />
-                                        <TextField fx:id="lastNameField" prefHeight="126.0" prefWidth="252.0" />
+                                        <TextField fx:id="lastNameField" alignment="BOTTOM_LEFT" prefHeight="126.0" prefWidth="252.0" />
                                     </HBox>
+                           <HBox prefHeight="40.0" prefWidth="479.0">
+                              <children>
+                                           <Button fx:id="sendRequestButton" contentDisplay="BOTTOM" onAction="#sendRequest" prefHeight="0.0" prefWidth="128.0" text="Send Request" />
+                              </children>
+                           </HBox>
 
-                                    <HBox alignment="BOTTOM_CENTER" spacing="10.0">
-                                        <Button fx:id="addButton" onAction="#addUser" prefHeight="26.0" prefWidth="100.0" text="Add" />
-                                        <Button fx:id="updateButton" onAction="#updateUser" prefWidth="100.0" text="Update" />
-                                        <Button fx:id="deleteButton" onAction="#deleteUser" prefWidth="100.0" text="Delete" />
-                                        <Button fx:id="generareButton" onAction="#generareUseri" prefWidth="100.0" text="Generate" />
-                                        <Button onAction="#sendRequest" prefWidth="100.0" text="Send Request" />
+                                    <HBox alignment="TOP_CENTER" minHeight="-Infinity" minWidth="-Infinity" prefHeight="34.0" prefWidth="467.0" spacing="10.0">
+                                        <Button fx:id="addButton" onAction="#addUser" prefHeight="30.0" prefWidth="100.0" text="Add" />
+                                        <Button fx:id="updateButton" onAction="#updateUser" prefHeight="31.0" prefWidth="100.0" text="Update" />
+                                        <Button fx:id="deleteButton" onAction="#deleteUser" prefHeight="30.0" prefWidth="100.0" text="Delete" />
+                                        <Button fx:id="generareButton" onAction="#generareUseri" prefHeight="30.0" prefWidth="100.0" text="Generate" />
                                         <VBox.margin>
                                             <Insets top="100.0" />
                                         </VBox.margin>
@@ -65,22 +69,16 @@
                     <content>
                         <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
                             <children>
-                                <ListView fx:id="friendsList" layoutX="1.0" layoutY="2.0" prefHeight="544.0" prefWidth="470.0" AnchorPane.bottomAnchor="1.0" AnchorPane.leftAnchor="1.0" AnchorPane.topAnchor="2.0" />
+                                <ListView fx:id="friendsList" layoutX="1.0" layoutY="1.0" prefHeight="544.0" prefWidth="570.0" AnchorPane.bottomAnchor="2.0" AnchorPane.leftAnchor="1.0" AnchorPane.topAnchor="1.0" />
                             </children>
                         </AnchorPane>
                     </content>
                 </Tab>
-                  <Tab onSelectionChanged="#enterMessages" text="Messages">
+                  <Tab text="Messages">
                     <content>
-                        <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
+                        <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="511.0" prefWidth="963.0">
                             <children>
-                                <TextField layoutX="215.0" layoutY="346.0" onKeyPressed="#sendMessage" prefHeight="38.0" prefWidth="498.0" promptText="Write a message" AnchorPane.bottomAnchor="0.0" AnchorPane.rightAnchor="0.0" />
-                                <ScrollPane layoutX="514.0" layoutY="2.0" prefHeight="346.0" prefWidth="500.0" AnchorPane.bottomAnchor="38.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
-                                    <content>
-                                        <VBox prefHeight="345.0" prefWidth="494.0" />
-                                    </content>
-                                </ScrollPane>
-                                <ListView fx:id="messagesFriendList" layoutY="14.0" prefHeight="386.0" prefWidth="214.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.topAnchor="0.0" />
+                                <ListView fx:id="messagesFriendList" layoutX="8.0" layoutY="6.0" prefHeight="540.0" prefWidth="955.0" AnchorPane.bottomAnchor="1.0" AnchorPane.leftAnchor="8.0" AnchorPane.topAnchor="6.0" />
                             </children>
                         </AnchorPane>
                     </content>
@@ -89,9 +87,9 @@
                     <content>
                         <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
                             <children>
-                                <ListView fx:id="friendsRequestList" prefHeight="342.0" prefWidth="467.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.topAnchor="0.0" />
-                                <Button layoutX="496.0" layoutY="101.0" mnemonicParsing="false" onAction="#acceptFriendRequest" text="Accept" />
-                                <Button layoutX="498.0" layoutY="158.0" mnemonicParsing="false" onAction="#declineFriendRequest" text="Decline" />
+                                <ListView fx:id="friendsRequestList" prefHeight="547.0" prefWidth="623.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.topAnchor="0.0" />
+                                <Button fx:id="acceptButton" layoutX="631.0" layoutY="101.0" mnemonicParsing="false" onAction="#acceptFriendRequest" prefHeight="67.0" prefWidth="98.0" text="Accept" />
+                                <Button fx:id="declineButton" layoutX="631.0" layoutY="187.0" mnemonicParsing="false" onAction="#declineFriendRequest" prefHeight="71.0" prefWidth="102.0" text="Decline" />
                             </children>
                         </AnchorPane>
                     </content>
@@ -101,12 +99,14 @@
                         <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
                             <children>
                                 <ListView fx:id="friendRequestsSent" prefHeight="386.0" prefWidth="513.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.topAnchor="0.0" />
-                                <Button layoutX="557.0" layoutY="168.0" mnemonicParsing="false" onAction="#cancelFriendRequest" text="Cancel" />
+                                <Button fx:id="cancelButton" layoutX="557.0" layoutY="168.0" mnemonicParsing="false" onAction="#cancelFriendRequest" text="Cancel" />
                             </children>
                         </AnchorPane>
                     </content>
                 </Tab>
             </tabs>
         </TabPane>
+               <Text fx:id="username" layoutX="829.0" layoutY="612.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Popescu Marian" textAlignment="CENTER" wrappingWidth="133.9150848388672" AnchorPane.leftAnchor="829.0" AnchorPane.rightAnchor="39.08491516113281" />
+      <AmbientLight color="CHARTREUSE" lightOn="true" />
     </children>
 </AnchorPane>

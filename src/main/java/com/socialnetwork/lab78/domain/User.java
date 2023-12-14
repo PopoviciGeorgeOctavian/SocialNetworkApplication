@@ -51,10 +51,8 @@ public class User  extends Entity<UUID>{
 
     @Override
     public String toString() {
-        return "User{" +
-                "firstName='" + firstName + '\'' +
-                ", lastName='" + lastName + '\'' +
-                '}';
+        return  firstName + '\'' +
+                 lastName + '\'';
     }
 
     @Override

@@ -18,9 +18,11 @@ import com.socialnetwork.lab78.utils.observer.Observer;
 import com.socialnetwork.lab78.utils.observer.UserChangeEvent;
 import com.socialnetwork.lab78.validators.ValidationException;
 
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
 import static com.socialnetwork.lab78.domain.FriendRequest.ACCEPTED;
@@ -160,10 +162,12 @@ public class Service implements Observable<UserChangeEvent> {
             for (FriendShip friendship : friendships) {
                 if (friendship.getUser1().equals(oldUser)) {
                     friendship.setUser1(newUser);
+                    friendship.setDate(LocalDateTime.now());
                     FriendShipRepo.update(friendship);
                 }
                 if (friendship.getUser2().equals(oldUser)) {
                     friendship.setUser2(newUser);
+                    friendship.setDate(LocalDateTime.now());
                     FriendShipRepo.update(friendship);
                 }
             }
@@ -325,6 +329,26 @@ public class Service implements Observable<UserChangeEvent> {
 
         return usersWithMinFriends;
     }
+
+
+    public List<User> getAcceptedFriendsOfUser(User user) {
+        // Obține toate prieteniile
+        Iterable<FriendShip> friendships = FriendShipRepo.findAll();
+
+        // Filtrăm prieteniile pentru a obține doar cele ACCEPTED în care user-ul dat este implicat
+        List<User> acceptedFriends = StreamSupport.stream(friendships.spliterator(), false)
+                .filter(friendship ->
+                        (friendship.getUser1().equals(user) || friendship.getUser2().equals(user))
+                                && friendship.getAcceptance() == FriendRequest.ACCEPTED)
+                .flatMap(friendship -> Stream.of(friendship.getUser1(), friendship.getUser2()))
+                .distinct()
+                .collect(Collectors.toList());
+
+        return acceptedFriends;
+    }
+
+
+
     public int numarPrieteni(User user) {
         return (int) StreamSupport.stream(FriendShipRepo.findAll().spliterator(), false)
                 .filter(f -> f.getUser1().equals(user) || f.getUser2().equals(user))
@@ -384,15 +408,24 @@ public class Service implements Observable<UserChangeEvent> {
 
     public void declineFriendRequest(String n1, String p1, String n2, String p2) {
         removeFriendShip(n1, p1, n2, p2);
+
         try {
             User u1 = getUserByNumePrenume(n1, p1);
             User u2 = getUserByNumePrenume(n2, p2);
-            if (u1 == null || u2 == null || u1.equals(u2))
+
+            // Check if the users are valid and not the same
+            if (u1 == null || u2 == null || u1.equals(u2)) {
                 throw new ValidationException("Acesti useri nu sunt buni");
-            var FriendShip = new FriendShip(u1, u2, FriendRequest.REJECTED);
-            FriendShipRepo.save(FriendShip);
-            u1.addFriend(u2);
-            u2.addFriend(u1);
+            }
+
+            // Check if they are already friends
+            if (areAlreadyFriends(u1, u2)) {
+                throw new ValidationException("Users are already friends");
+            }
+
+            // Create a new friendship with REJECTED status
+            var friendShip = new FriendShip(u1, u2, FriendRequest.REJECTED);
+            FriendShipRepo.save(friendShip);
 
         } catch (Exception e) {
             System.err.println(e);
@@ -403,17 +436,58 @@ public class Service implements Observable<UserChangeEvent> {
         try {
             User u1 = getUserByNumePrenume(n1, p1);
             User u2 = getUserByNumePrenume(n2, p2);
-            if (u1 == null || u2 == null || u1.equals(u2))
+
+            // Check if the users are valid and not the same
+            if (u1 == null || u2 == null || u1.equals(u2)) {
                 throw new ValidationException("Acesti useri nu sunt buni");
-            var FriendShip = new FriendShip(u1, u2, FriendRequest.PENDING);
-            FriendShipRepo.save(FriendShip);
-            u1.addFriend(u2);
-            u2.addFriend(u1);
+            }
+
+            // Check if they are already friends
+            if (areAlreadyFriends(u1, u2)) {
+                throw new ValidationException("Users are already friends");
+            }
+
+            // Create a new friendship
+            var friendShip = new FriendShip(u1, u2, FriendRequest.PENDING);
+            FriendShipRepo.save(friendShip);
 
         } catch (Exception e) {
             System.err.println(e);
         }
-
     }
 
+
+    public boolean areAlreadyFriends(User u1, User u2) {
+        // Retrieve existing friendships from the repository
+        Iterable<FriendShip> existingFriendships = FriendShipRepo.findAll();
+
+        // Check if there is a friendship with the specified users and status ACCEPTED
+        for (FriendShip friendship : existingFriendships) {
+            if ((friendship.getUser1().equals(u1) && friendship.getUser2().equals(u2))
+                    || (friendship.getUser1().equals(u2) && friendship.getUser2().equals(u1))) {
+                if (friendship.getAcceptance() == FriendRequest.ACCEPTED) {
+                    return true; // Users are already friends
+                }
+            }
+        }
+
+        return false; // Users are not already friends
+    }
+
+    public boolean areFriendRequestsPending(User u1, User u2) {
+        // Retrieve existing friend requests from the repository
+        Iterable<FriendShip> existingFriendRequests = FriendShipRepo.findAll();
+
+        // Check if there is a friend request with the specified users and status PENDING
+        for (FriendShip friendRequest : existingFriendRequests) {
+            if ((friendRequest.getUser1().equals(u1) && friendRequest.getUser2().equals(u2))
+                    || (friendRequest.getUser1().equals(u2) && friendRequest.getUser2().equals(u1))) {
+                if (friendRequest.getAcceptance() == FriendRequest.PENDING) {
+                    return true; // There is a pending friend request
+                }
+            }
+        }
+
+        return false; // There are no pending friend requests
+    }
 }

@@ -44,7 +44,7 @@ public class MessageService {
         }
     }
 
-    public Iterable<Message> getAllMessages() {
+    public List<Message> getAllMessages() {
         ArrayList<Message> l = new ArrayList<>((Collection) messageRepo.findAll());
 
         l.sort(Comparator.comparing(Message::getData));

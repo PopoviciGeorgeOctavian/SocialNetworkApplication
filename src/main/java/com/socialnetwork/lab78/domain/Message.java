@@ -93,13 +93,10 @@ public class Message extends Entity<UUID> {
 
     @Override
     public String toString() {
-        return "Message{" +
-                "from=" + from +
-                ", to=" + to +
-                ", message='" + message + '\'' +
-                ", data=" + data +
-                ", reply=" + reply +
-                ", id=" + id +
-                '}';
+        return "from " + from +
+                " to " + to +
+                " message '" + message + '\'' + data +
+                " reply " + reply +
+                " id " + id ;
     }
 }

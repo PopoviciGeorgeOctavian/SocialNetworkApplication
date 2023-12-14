@@ -2,6 +2,7 @@ package com.socialnetwork.lab78.repository;
 
 
 
+import com.socialnetwork.lab78.domain.FriendRequest;
 import com.socialnetwork.lab78.domain.FriendShip;
 import com.socialnetwork.lab78.domain.User;
 
@@ -63,7 +64,8 @@ public class FriendShipDBRepository implements Repository<UUID, FriendShip> {
                 String FirstNameU2 = r.getString("FirstNameU2");
                 String LastNameU2 = r.getString("LastNameU2");
                 User u2 = new User(idu2, FirstNameU2, LastNameU2);
-                FriendShip p1 = new FriendShip(id, u1, u2);
+                String status = r.getString("status");
+                FriendShip p1 = new FriendShip(id, u1, u2, FriendRequest.valueOf(status));
                 list.add(p1);
             }
             return list;
@@ -75,7 +77,7 @@ public class FriendShipDBRepository implements Repository<UUID, FriendShip> {
     @Override
     public Optional<FriendShip> save(FriendShip entity) {
         try (Connection connection = DriverManager.getConnection(url, user, password);
-             PreparedStatement statement = connection.prepareStatement("INSERT INTO Prietenii(UUID,FirstNameU1,LastNameU1,FirstNameU2,LastNameU2,friendsFrom,idu1,idu2) VALUES (?,?,?,?,?,?,?,?)");) {
+             PreparedStatement statement = connection.prepareStatement("INSERT INTO Prietenii(UUID,FirstNameU1,LastNameU1,FirstNameU2,LastNameU2,friendsFrom,idu1,idu2,status) VALUES (?,?,?,?,?,?,?,?,?)");) {
             statement.setObject(1, entity.getId());
             statement.setString(2, entity.getUser1().getFirstName());
             statement.setString(3, entity.getUser1().getLastName());
@@ -84,6 +86,7 @@ public class FriendShipDBRepository implements Repository<UUID, FriendShip> {
             statement.setTimestamp(6, Timestamp.valueOf(entity.getDate()));
             statement.setObject(7, entity.getUser1().getId());
             statement.setObject(8, entity.getUser2().getId());
+            statement.setString(9, entity.getAcceptance().name());
             int affectedRows = statement.executeUpdate();
             return affectedRows != 0 ? Optional.empty() : Optional.of(entity);
         } catch (SQLException e) {
@@ -107,14 +110,15 @@ public class FriendShipDBRepository implements Repository<UUID, FriendShip> {
     @Override
     public Optional<FriendShip> update(FriendShip entity) {
         try (Connection connection = DriverManager.getConnection(url, user, password);
-             PreparedStatement statement = connection.prepareStatement("UPDATE Prietenii SET FirstNameU1 = ?, LastNameU1 = ?, FirstNameU2 = ?, LastNameU2 = ?, idu1 = ?, idu2 = ? WHERE UUID = ?");) {
+             PreparedStatement statement = connection.prepareStatement("UPDATE Prietenii SET FirstNameU1 = ?, LastNameU1 = ?, FirstNameU2 = ?, LastNameU2 = ?, idu1 = ?, idu2 = ?, friendsfrom =? WHERE UUID = ?");) {
             statement.setString(1, entity.getUser1().getFirstName());
             statement.setString(2, entity.getUser1().getLastName());
             statement.setString(3, entity.getUser2().getFirstName());
             statement.setString(4, entity.getUser2().getLastName());
             statement.setObject(5, entity.getUser1().getId());
             statement.setObject(6, entity.getUser2().getId());
-            statement.setObject(7, entity.getId());
+            statement.setTimestamp(7, Timestamp.valueOf(entity.getDate()));
+            statement.setObject(8, entity.getId());
             int affectedRows = statement.executeUpdate();
             return affectedRows != 0 ? Optional.empty() : Optional.of(entity);
         } catch (SQLException e) {

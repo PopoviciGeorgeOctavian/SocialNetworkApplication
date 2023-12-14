@@ -3,6 +3,7 @@ package com.socialnetwork.lab78.controller;
 import com.socialnetwork.lab78.Paging.Page;
 import com.socialnetwork.lab78.Paging.Pageable;
 import com.socialnetwork.lab78.domain.FriendShip;
+import com.socialnetwork.lab78.domain.Message;
 import com.socialnetwork.lab78.domain.User;
 import com.socialnetwork.lab78.service.MessageService;
 import com.socialnetwork.lab78.service.Service;
@@ -79,27 +80,28 @@ public class UserController implements Observer<UserChangeEvent>{
 
     */
 
-   // @FXML
-    //private ListView<String> friendRequestsSent;
-   // @FXML
-   // private ListView<String> friendsRequestList;
     @FXML
-    private ListView<User> friendsList;
+    private ListView<String> friendRequestsSent;
+    @FXML
+    private ListView<String> friendsRequestList;
+    @FXML
+    private ListView<String> friendsList;
 
     @FXML
-    private ListView<User> messagesFriendList;
+    private ListView<String> messagesFriendList;
 
     @FXML
-    private Button addButton, deleteButton, nextButton, previousButton;
+    private Button addButton, deleteButton, nextButton, previousButton,sendRequestButton;
 
     @FXML
-    public Button btnAdMesaj, btnafisareConversatii;
+    public Button btnAdMesaj, btnafisareConversatii, acceptButton, declineButton, cancelButton;
 
     private final ObservableList<User> users = FXCollections.observableArrayList();
 
-    private final ObservableList<User> friendsObs = FXCollections.observableArrayList();
+    private final ObservableList<String> listaMesaje = FXCollections.observableArrayList();
 
-   // private final ObservableList<String> userObs = FXCollections.observableArrayList();
+    private final ObservableList<String> friendsObs = FXCollections.observableArrayList();
+
     private final ObservableList<String> friendsReqObs = FXCollections.observableArrayList();
 
     private final ObservableList<String> friendsReqSentObs = FXCollections.observableArrayList();
@@ -109,7 +111,6 @@ public class UserController implements Observer<UserChangeEvent>{
     public void setService(Service serviceUsers){
         this.service = serviceUsers;
         service.addObserver(this);
-        initialize();
         initModel();
 
 
@@ -127,48 +128,53 @@ public class UserController implements Observer<UserChangeEvent>{
         this.messageService = messageService;
     }
 
-    public void initApp(User user)
-    {
+    public void initApp(User user) {
         this.user = user;
         username.setText(user.getFirstName() + " " + user.getLastName());
 
+        listaMesaje.clear();
+        listaMesaje.addAll(messageService.getAllMessages().stream()
+                .filter(s -> s != null) // Filter out null elements, if any
+                .map(String::valueOf)   // Convert elements to strings
+                .collect(Collectors.toList()));
+
+
+        // Clear and add friends
         friendsObs.clear();
-        friendsObs.addAll(user.getFriends());
 
-        service.printFriendships().forEach(f -> {
-            FriendShip friendShip = (FriendShip) f;
-            if(friendShip.getUser2().getId().equals(user.getId()))
-                friendsReqObs
-                        .add(friendShip.getUser1().getFirstName() + " " + friendShip.getUser1().getLastName() +
-                                  " " + friendShip.getDate() + " "
-                                + friendShip.getAcceptance());
-        });
+        List<User> acceptedFriends = service.getAcceptedFriendsOfUser(user);
 
-        service.getAllUseri().forEach(u -> {
-            User user1 = (User) u;
-            AtomicReference<String> additionalMessage = new AtomicReference<>("");
-            if(user1.equals(this.user))
-                additionalMessage.set("YOU");
+// Filter out the currently connected user from the list of accepted friends
+        List<String> acceptedFullNames = acceptedFriends.stream()
+                .filter(friend -> !friend.equals(user)) // Assuming equals() method is appropriately overridden in your User class
+                .map(friend -> friend.getFirstName() + " " + friend.getLastName())
+                .collect(Collectors.toList());
 
-            this.user.getFriends().forEach(u2 -> {
-                User user2 = (User) u2;
-                if(u2.equals(u))
-                    additionalMessage.set("FRIEND");
-            });
+        friendsObs.addAll(acceptedFullNames);
+
+        friendsReqObs.clear();
+        // Add received friend requests
+        StreamSupport.stream(service.printFriendships().spliterator(), false)
+                .filter(f -> f instanceof FriendShip)
+                .map(f -> (FriendShip) f)
+                .filter(friendShip -> friendShip.getUser2().getId().equals(user.getId()))
+                .forEach(friendShip -> friendsReqObs.add(
+                        friendShip.getUser1().getFirstName() + " " + friendShip.getUser1().getLastName() +
+                                " " + friendShip.getDate() +
+                                " " + friendShip.getAcceptance()));
 
 
-        });
-
-        service.printFriendships().forEach(f -> {
-            FriendShip friendShip = (FriendShip) f;
-            if(friendShip.getUser1().getId().equals(user.getId()))
-                friendsReqSentObs
-                        .add(friendShip.getUser2().getFirstName() + " " + friendShip.getUser2().getLastName() +
-                                " "  + friendShip.getDate() + " "
-                                + friendShip.getAcceptance());
-        });
+        friendsReqSentObs.clear();
+        // Add sent friend requests
+        StreamSupport.stream(service.printFriendships().spliterator(), false)
+                .filter(f -> f instanceof FriendShip)
+                .map(f -> (FriendShip) f)
+                .filter(friendShip -> friendShip.getUser1().getId().equals(user.getId()))
+                .forEach(friendShip -> friendsReqSentObs.add(
+                        friendShip.getUser2().getFirstName() + " " + friendShip.getUser2().getLastName() +
+                                " " + friendShip.getDate() +
+                                " " + friendShip.getAcceptance()));
     }
-
 
     private void initModel()
     {
@@ -209,10 +215,10 @@ public class UserController implements Observer<UserChangeEvent>{
         idColumn.setCellValueFactory(new PropertyValueFactory<>("id"));
         firstNameColumn.setCellValueFactory(new PropertyValueFactory<>("firstName"));
         lastNameColumn.setCellValueFactory(new PropertyValueFactory<>("lastName"));
-        // friendsRequestList.setItems(friendsReqObs);
-        //  friendRequestsSent.setItems(friendsReqSentObs);
+        friendsRequestList.setItems(friendsReqObs);
+        friendRequestsSent.setItems(friendsReqSentObs);
         friendsList.setItems(friendsObs);
-        messagesFriendList.setItems(friendsObs);
+        messagesFriendList.setItems(listaMesaje);
     }
     @FXML
     private void addUser(ActionEvent actionEvent) {
@@ -265,6 +271,7 @@ public class UserController implements Observer<UserChangeEvent>{
             MessageAlert.showErrorMessage(null, "An error occurred: " + e.getMessage());
         }
         initialize();
+        initApp(this.user);
     }
 
     @FXML
@@ -278,6 +285,7 @@ public class UserController implements Observer<UserChangeEvent>{
                 service.updateUser(id, newFirstName, newLastName);
                 //loadUsers();
                 initModel();
+                initApp(this.user);
                 MessageAlert.showMessage(null, Alert.AlertType.INFORMATION, "User Updated", "User successfully updated.");
                 usersTable.refresh();
 
@@ -318,6 +326,7 @@ public class UserController implements Observer<UserChangeEvent>{
     @Override
     public void update(UserChangeEvent t) {
         initModel();
+        initApp(this.user);
     }
 
     public void onPrevious(ActionEvent actionEvent){
@@ -387,6 +396,7 @@ public class UserController implements Observer<UserChangeEvent>{
             messageService.addMessage(user, id_toList, mesaj);
 
             getMesajField.clear();
+            initApp(this.user);
         } catch (Exception e) {
             MessageAlert.showErrorMessage(null, "An error occurred: " + e.getMessage());
         }
@@ -416,14 +426,120 @@ public class UserController implements Observer<UserChangeEvent>{
     }
 
     public void sendRequest(ActionEvent actionEvent) {
+
+        try {
+            User selectedUser = usersTable.getSelectionModel().getSelectedItem();
+            if (selectedUser != null) {
+                // Assuming user is the currently logged-in user
+                User loggedInUser = user;
+
+                // Check if the users are already friends
+                if (service.areAlreadyFriends(loggedInUser, selectedUser)) {
+                    MessageAlert.showMessage(null, Alert.AlertType.WARNING, "Already Friends", "You are already friends with " + selectedUser.getFirstName() + " " + selectedUser.getLastName());
+                } else {
+                    // If they are not already friends, proceed to send the friend request
+                    String FirstNameU1 = loggedInUser.getFirstName();
+                    String LastNameU1 = loggedInUser.getLastName();
+                    String FirstNameU2 = selectedUser.getFirstName();
+                    String LastNameU2 = selectedUser.getLastName();
+
+                    // Check if there is an existing friend request in PENDING status
+                    if (!service.areFriendRequestsPending(loggedInUser, selectedUser)) {
+                        // If no pending friend request, send the new friend request
+                        service.createFriendRequest(FirstNameU1, LastNameU1, FirstNameU2, LastNameU2);
+                        friendsReqSentObs.removeAll(friendsReqSentObs.stream().toList());
+                        MessageAlert.showMessage(null, Alert.AlertType.INFORMATION, "Friend Request Sent", "Friend Request successfully sent.");
+                        initApp(loggedInUser);
+                    } else {
+                        MessageAlert.showMessage(null, Alert.AlertType.WARNING, "Friend Request Pending", "You already have a pending friend request with " + selectedUser.getFirstName() + " " + selectedUser.getLastName());
+                    }
+                }
+            }
+        } catch (Exception e) {
+            MessageAlert.showErrorMessage(null, "An error occurred: " + e.getMessage());
+        }
     }
 
-    public void acceptFriendRequest(ActionEvent actionEvent) {
+
+
+        public void acceptFriendRequest(ActionEvent actionEvent) {
+        try {
+            if (friendsRequestList.getSelectionModel().getSelectedItem() == null)
+                return;
+
+            String userInfo = friendsRequestList.getSelectionModel().getSelectedItem().toString();
+            String firstnameU2 = userInfo.split(" ")[0];
+            String lastnameU2 = userInfo.split(" ")[1];
+            String status = userInfo.split(" ")[3];
+
+            if (!status.equals("PENDING"))
+                return;
+            String FirstNameU1 = user.getFirstName();
+            String LastNameU1 = user.getLastName();
+
+            service.removeFriendShip(firstnameU2, lastnameU2, FirstNameU1, LastNameU1);
+            friendsObs.removeAll(friendsObs.stream().toList());
+            friendsReqObs.removeAll(friendsReqObs.stream().toList());
+            service.addFriendShip(firstnameU2, lastnameU2, FirstNameU1, LastNameU1);
+            MessageAlert.showMessage(null, Alert.AlertType.INFORMATION, "Friend Request Accepted", "Friend Request successfully accepted.");
+            initApp(this.user);
+
+        } catch (Exception e) {
+            MessageAlert.showErrorMessage(null, "An error occurred: " + e.getMessage());
+        }
     }
 
     public void declineFriendRequest(ActionEvent actionEvent) {
+        try {
+            if (friendsRequestList.getSelectionModel().getSelectedItem() == null)
+                return;
+
+            String userInfo = friendsRequestList.getSelectionModel().getSelectedItem().toString();
+            String firstnameU2 = userInfo.split(" ")[0];
+            String lastnameU2 = userInfo.split(" ")[1];
+            String status = userInfo.split(" ")[3];
+            String FirstNameU1 = user.getFirstName();
+            String LastNameU1 = user.getLastName();
+
+            if (!status.equals("PENDING"))
+                return;
+
+            service.removeFriendShip(firstnameU2, lastnameU2, FirstNameU1, LastNameU1);
+            friendsObs.removeAll(friendsObs.stream().toList());
+            friendsReqObs.removeAll(friendsReqObs.stream().toList());
+            service.declineFriendRequest(firstnameU2, lastnameU2, FirstNameU1, LastNameU1);
+            MessageAlert.showMessage(null, Alert.AlertType.INFORMATION, "Friend Request Declined", "Friend Request successfully declined.");
+            initApp(this.user);
+
+        } catch (Exception e) {
+            MessageAlert.showErrorMessage(null, "An error occurred: " + e.getMessage());
+        }
+    }
+    public void cancelFriendRequest(ActionEvent actionEvent) {
+        try {
+            if (friendRequestsSent.getSelectionModel().getSelectedItem() == null)
+                return;
+
+            String userInfo = friendRequestsSent.getSelectionModel().getSelectedItem().toString();
+            String firstnameU2 = userInfo.split(" ")[0];
+            String lastnameU2 = userInfo.split(" ")[1];
+            String status = userInfo.split(" ")[3];
+
+            if (!status.equals("PENDING"))
+                return;
+
+            String FirstNameU1 = user.getFirstName();
+            String LastNameU1 = user.getLastName();
+
+            service.removeFriendShip(FirstNameU1, LastNameU1, firstnameU2, lastnameU2);
+            friendsReqSentObs.removeAll(friendsReqSentObs.stream().toList());
+
+            MessageAlert.showMessage(null, Alert.AlertType.INFORMATION, "Friend Request Canceled", "Friend Request successfully canceled.");
+            initApp(this.user);
+
+        } catch (Exception e) {
+            MessageAlert.showErrorMessage(null, "An error occurred: " + e.getMessage());
+        }
     }
 
-    public void cancelFriendRequest(ActionEvent actionEvent) {
-    }
 }
