@@ -24,7 +24,7 @@ import java.util.UUID;
  * The HelloApplication class serves as the entry point for the JavaFX application.
  * It initializes the necessary repositories, services, and controllers for user authentication and interaction.
  */
-public class HelloApplication extends Application {
+public class HelloApplication extends Application  {
 
     /**
      * The start method is called when the JavaFX application is launched.
