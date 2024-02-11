@@ -7,25 +7,38 @@
 <?import javafx.scene.text.Font?>
 <?import javafx.scene.text.Text?>
 
+<?import javafx.scene.control.PasswordField?>
 <AnchorPane prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/19" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.socialnetwork.lab78.controller.LogInController">
     <children>
+        <!-- Log In Button -->
         <Button fx:id="logInButton" layoutX="227.0" layoutY="267.0" mnemonicParsing="false" onAction="#onLogInButtonCLick" prefHeight="26.0" prefWidth="111.0" text="Log In" textAlignment="CENTER" textFill="#1408ff" AnchorPane.leftAnchor="225.0" AnchorPane.rightAnchor="225.0">
             <font>
                 <Font name="System Bold" size="13.0" />
-            </font></Button>
-        <TextField fx:id="firstName" layoutX="227.0" layoutY="157.0" onKeyTyped="#onTextChanged" prefHeight="26.0" prefWidth="150.0" promptText="First Name" AnchorPane.leftAnchor="225.0" AnchorPane.rightAnchor="225.0" />
-        <TextField fx:id="lastName" layoutX="227.0" layoutY="214.0" onKeyTyped="#onTextChanged" prefHeight="26.0" prefWidth="150.0" promptText="Last Name" AnchorPane.leftAnchor="225.0" AnchorPane.rightAnchor="225.0" />
+            </font>
+        </Button>
+
+        <!-- Email Input Field -->
+        <TextField fx:id="emailUser" layoutX="227.0" layoutY="157.0" onKeyTyped="#onTextChanged" prefHeight="26.0" prefWidth="150.0" promptText="Email" AnchorPane.leftAnchor="225.0" AnchorPane.rightAnchor="225.0" />
+
+        <!-- Password Input Field -->
+        <PasswordField fx:id="passwordUser" layoutX="227.0" layoutY="214.0" onKeyTyped="#onPasswordChanged" prefHeight="26.0" prefWidth="150.0" promptText="Password" AnchorPane.leftAnchor="225.0" AnchorPane.rightAnchor="225.0" />
+
+        <!-- Sign In Label -->
         <Label layoutX="233.0" layoutY="82.0" text="Sign in" textFill="#0015f7" AnchorPane.leftAnchor="233.0" AnchorPane.rightAnchor="217.0">
             <font>
                 <Font name="System Bold" size="37.0" />
             </font>
         </Label>
-        <Text fx:id="firstNameErrorText" fill="RED" layoutX="227.0" layoutY="194.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Wrong First Name!" visible="false" wrappingWidth="57.64306640625" AnchorPane.leftAnchor="225.0" AnchorPane.rightAnchor="225.0">
+
+        <!-- Email Error Text -->
+        <Text fx:id="emailErrorText" fill="RED" layoutX="227.0" layoutY="194.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Wrong email!" visible="false" wrappingWidth="57.64306640625" AnchorPane.leftAnchor="225.0" AnchorPane.rightAnchor="225.0">
             <font>
                 <Font name="System Bold" size="9.0" />
-            </font>s
+            </font>
         </Text>
-        <Text fx:id="lastNameErrorText" fill="RED" layoutX="227.0" layoutY="251.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Wrong Last Name!" visible="false" wrappingWidth="83.20000000000005" AnchorPane.leftAnchor="225.0" AnchorPane.rightAnchor="225.0">
+
+        <!-- Password Error Text -->
+        <Text fx:id="passwordErrorText" fill="RED" layoutX="227.0" layoutY="251.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Wrong password!" visible="false" wrappingWidth="83.20000000000005" AnchorPane.leftAnchor="225.0" AnchorPane.rightAnchor="225.0">
             <font>
                 <Font name="System Bold" size="9.0" />
             </font>

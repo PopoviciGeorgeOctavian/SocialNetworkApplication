@@ -1,9 +1,6 @@
 package com.socialnetwork.lab78.service;
 
 
-
-
-
 import com.socialnetwork.lab78.Paging.Page;
 import com.socialnetwork.lab78.Paging.Pageable;
 import com.socialnetwork.lab78.Paging.PagingRepository;
@@ -27,42 +24,63 @@ import java.util.stream.StreamSupport;
 
 import static com.socialnetwork.lab78.domain.FriendRequest.ACCEPTED;
 
+/**
+ * Service class provides the main business logic for managing users and friendships in the social network application.
+ */
 public class Service implements Observable<UserChangeEvent> {
 
-    //private InMemoryRepository<UUID, User> UserRepo;
     private PagingRepository<UUID, User> UserRepo;
-    //private InMemoryRepository<UUID, FriendShip> FriendShipRepo;
     private Repository<UUID, FriendShip> FriendShipRepo;
-
     final private List<Observer<UserChangeEvent>> observers = new ArrayList<>();
-    //Constructor
-    // public Service(InMemoryRepository<UUID, User> UserRepo, InMemoryRepository<UUID, FriendShip> FriendShipRepo) {
+
+    /**
+     * Constructs a new Service with the specified repositories for users and friendships.
+     *
+     * @param UserRepo       The repository for users.
+     * @param FriendShipRepo The repository for friendships.
+     */
     public Service(PagingRepository<UUID, User> UserRepo, Repository<UUID, FriendShip> FriendShipRepo) {
         this.UserRepo = UserRepo;
         this.FriendShipRepo = FriendShipRepo;
     }
 
-    public  Page<User>  findAll(Pageable pageable) {
+    /**
+     * Retrieves a page of users based on the provided pageable information.
+     *
+     * @param pageable The pageable information.
+     * @return A page of users.
+     */
+    public Page<User> findAll(Pageable pageable) {
         return UserRepo.findAll(pageable);
     }
 
-    //Adauga user
-    public void addUser(String nume, String prenume) {
+    /**
+     * Adds a new user to the system with the specified details.
+     *
+     * @param nume     The first name of the user.
+     * @param prenume  The last name of the user.
+     * @param email    The email of the user.
+     * @param password The password of the user.
+     */
+    public void addUser(String nume, String prenume, String email, String password) {
         try {
-
-
-            User u = new User(nume, prenume);
+            User u = new User(nume, prenume, email, password);
             UserRepo.save(u);
-        }catch (Exception e) {
+        } catch (Exception e) {
             System.err.println(e);
         }
     }
 
-    //Sterge user si prieteniile acestuia
+    /**
+     * Deletes a user and their friendships based on the provided first name and last name.
+     *
+     * @param nume    The first name of the user.
+     * @param prenume The last name of the user.
+     */
     public void deleteUser(String nume, String prenume) {
-        try{
+        try {
             User u = getUserByNumePrenume(nume, prenume);
-            if(u == null) {
+            if (u == null) {
                 System.err.println("Nu exista nici un user cu acest nume si prenume!");
                 return;
             }
@@ -73,52 +91,82 @@ public class Service implements Observable<UserChangeEvent> {
                 }
             }
             UserRepo.delete(u.getId());
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             System.err.println(e);
         }
     }
 
-
-
+    /**
+     * Retrieves all users in the system.
+     *
+     * @return An iterable of all users.
+     */
     public Iterable<User> getAllUseri() {
         return UserRepo.findAll();
     }
 
-
+    /**
+     * Retrieves a list of all users.
+     *
+     * @return A list of all users.
+     */
     public List<User> printUsers() {
         ArrayList<User> lista = new ArrayList<User>();
         UserRepo.findAll().forEach(lista::add);
         return lista;
     }
 
+    /**
+     * Retrieves all friendships in the system.
+     *
+     * @return An iterable of all friendships.
+     */
     public Iterable<FriendShip> printFriendships() {
         return FriendShipRepo.findAll();
     }
 
+    /**
+     * Retrieves a list of all friendships.
+     *
+     * @return A list of all friendships.
+     */
     public List<FriendShip> printPrieteniile() {
         ArrayList<FriendShip> lista = new ArrayList<>();
         FriendShipRepo.findAll().forEach(lista::add);
         return lista;
     }
 
-    //Adauga FriendShip
+    /**
+     * Adds a new friendship between users with the specified first and last names.
+     *
+     * @param n1 The first name of the first user.
+     * @param p1 The last name of the first user.
+     * @param n2 The first name of the second user.
+     * @param p2 The last name of the second user.
+     */
     public void addFriendShip(String n1, String p1, String n2, String p2) {
-        try{
+        try {
             User u1 = getUserByNumePrenume(n1, p1);
             User u2 = getUserByNumePrenume(n2, p2);
-            if(u1 == null || u2 == null || u1.equals(u2))
+            System.out.println("User1: " + u1 + "User2: " + u2);
+            if (u1 == null || u2 == null || u1.equals(u2))
                 throw new ValidationException("Acesti useri nu sunt buni");
             var FriendShip = new FriendShip(u1, u2, FriendRequest.ACCEPTED);
             FriendShipRepo.save(FriendShip);
             u1.addFriend(u2);
             u2.addFriend(u1);
 
-        }catch (Exception e){
+        } catch (Exception e) {
             System.err.println(e);
         }
     }
 
+    /**
+     * Retrieves the friendship of a user.
+     *
+     * @param u The user.
+     * @return The friendship of the user.
+     */
     public FriendShip getFriendShipByUser(User u) {
         return printPrieteniile().stream()
                 .filter(p -> p.getUser1().equals(u) || p.getUser2().equals(u))
@@ -126,6 +174,13 @@ public class Service implements Observable<UserChangeEvent> {
                 .orElse(null);
     }
 
+    /**
+     * Retrieves a user by their first name and last name.
+     *
+     * @param nume    The first name of the user.
+     * @param prenume The last name of the user.
+     * @return The user with the specified first name and last name.
+     */
     public User getUserByNumePrenume(String nume, String prenume) {
         return printUsers().stream()
                 .filter(u -> u.getFirstName().equals(nume) && u.getLastName().equals(prenume))
@@ -133,7 +188,14 @@ public class Service implements Observable<UserChangeEvent> {
                 .orElse(null);
     }
 
-    //Sterge FriendShip dupa nume prenume useri
+    /**
+     * Removes a friendship between users with the specified first and last names.
+     *
+     * @param n1 The first name of the first user.
+     * @param p1 The last name of the first user.
+     * @param n2 The first name of the second user.
+     * @param p2 The last name of the second user.
+     */
     public void removeFriendShip(String n1, String p1, String n2, String p2) {
         User u1 = getUserByNumePrenume(n1, p1);
         User u2 = getUserByNumePrenume(n2, p2);
@@ -147,14 +209,23 @@ public class Service implements Observable<UserChangeEvent> {
         }
     }
 
-    public void updateUser(UUID id, String newFirstName, String newLastName) throws Exception {
+    /**
+     * Updates the details of a user with the specified ID.
+     *
+     * @param id           The ID of the user to be updated.
+     * @param newFirstName The new first name.
+     * @param newLastName  The new last name.
+     * @param newEmail     The new email.
+     * @throws Exception if the user with the given ID is not found.
+     */
+    public void updateUser(UUID id, String newFirstName, String newLastName, String newEmail) throws Exception {
         Optional<User> oldUserOptional = UserRepo.findOne(id);
 
         if (oldUserOptional.isPresent()) {
             User oldUser = oldUserOptional.get();
 
             // Update user in the repository
-            User newUser = new User(id, newFirstName, newLastName);
+            User newUser = new User(id, newFirstName, newLastName, newEmail);
             UserRepo.update(newUser);
 
             // Update friendships referencing the old user
@@ -178,8 +249,13 @@ public class Service implements Observable<UserChangeEvent> {
         }
     }
 
-
-    //DFS
+    /**
+     * Performs Depth-First Search (DFS) starting from a given user and marks visited users.
+     *
+     * @param u   The starting user for DFS.
+     * @param set A map to track visited users.
+     * @return A list of users traversed during DFS.
+     */
     private List<User> DFS(User u, Map<UUID, Boolean> set) {
         List<User> list = new ArrayList<>();
         list.add(u);
@@ -194,7 +270,11 @@ public class Service implements Observable<UserChangeEvent> {
         return list;
     }
 
-    //Numara cate comunitati exista
+    /**
+     * Counts the number of communities using Depth-First Search (DFS).
+     *
+     * @return The number of communities in the graph.
+     */
     public int numberOfCommunities() {
         Iterable<User> it = UserRepo.findAll();
         Map<UUID, Boolean> set = new HashMap<>();
@@ -208,7 +288,11 @@ public class Service implements Observable<UserChangeEvent> {
         return count;
     }
 
-    //Cea mai sociabila comunitate
+    /**
+     * Finds the most sociable community using DFS and longest path calculation.
+     *
+     * @return A list of communities that are most sociable.
+     */
     public Iterable<Iterable<User>> mostSociableCommunity() {
         List<Iterable<User>> list = new ArrayList<>();
         Iterable<User> it = UserRepo.findAll();
@@ -230,6 +314,12 @@ public class Service implements Observable<UserChangeEvent> {
         return list;
     }
 
+    /**
+     * Calculates the longest path in a list of nodes.
+     *
+     * @param nodes The list of nodes.
+     * @return The length of the longest path.
+     */
     private int longestPath(List<User> nodes) {
         int max = 0;
         for (User u : nodes) {
@@ -240,11 +330,24 @@ public class Service implements Observable<UserChangeEvent> {
         return max;
     }
 
+    /**
+     * Calculates the longest path from a source user using Breadth-First Search (BFS).
+     *
+     * @param source The source user.
+     * @return The length of the longest path from the source.
+     */
     private int longestPathFromSource(User source) {
         Map<UUID, Boolean> set = new HashMap<>();
         return BFS(source, set);
     }
 
+    /**
+     * Performs Breadth-First Search (BFS) and calculates the maximum path length.
+     *
+     * @param source The source user.
+     * @param set    A map to track visited users.
+     * @return The maximum path length from the source.
+     */
     private int BFS(User source, Map<UUID, Boolean> set) {
         int max = -1;
         for (User f : source.getFriends())
@@ -259,65 +362,63 @@ public class Service implements Observable<UserChangeEvent> {
         return max + 1;
     }
 
+    /**
+     * Adds randomly generated users and friendships to the repository.
+     */
     public void addEntities() {
         String[] listaNume = {"Popescu", "Ionescu", "Dumitru", "Stancu", "Radu", "Mihai", "Neagu", "Dragomir", "Bălan", "Enescu"};
         String[] listaPrenume = {"Ana", "Ion", "Maria", "Mihai", "Elena", "Victor", "Adriana", "Alexandru", "Andreea", "Gabriel"};
 
         Random rand = new Random();
 
-        int indexNume = rand.nextInt(listaNume.length);
-        int indexPrenume = rand.nextInt(listaPrenume.length);
-        User u1 = new User(listaNume[indexNume], listaPrenume[indexPrenume]);
-        UserRepo.save(u1);
+        for (int i = 0; i < 10; i++) {
+            int indexNume = rand.nextInt(listaNume.length);
+            int indexPrenume = rand.nextInt(listaPrenume.length);
 
-        indexNume = rand.nextInt(listaNume.length);
-        indexPrenume = rand.nextInt(listaPrenume.length);
-        User u2 = new User(listaNume[indexNume], listaPrenume[indexPrenume]);
-        UserRepo.save(u2);
+            String firstName = listaPrenume[indexPrenume].trim(); // Trim the first name
+            String lastName = listaNume[indexNume].trim(); // Trim the last name
+            String email = firstName.toLowerCase() + "." + lastName.toLowerCase() + "@yahoo.com";
+            String password = generateRandomPassword();
 
-        indexNume = rand.nextInt(listaNume.length);
-        indexPrenume = rand.nextInt(listaPrenume.length);
-        User u3 = new User(listaNume[indexNume], listaPrenume[indexPrenume]);
-        UserRepo.save(u3);
+            User user = new User(firstName, lastName, email, password);
+            UserRepo.save(user);
+        }
+        List<User> users = printUsers(); // Retrieve existing users
 
-        indexNume = rand.nextInt(listaNume.length);
-        indexPrenume = rand.nextInt(listaPrenume.length);
-        User u4 = new User(listaNume[indexNume], listaPrenume[indexPrenume]);
-        UserRepo.save(u4);
+        for (int i = 0; i < users.size(); i++) {
+            User user = users.get(i);
 
-        indexNume = rand.nextInt(listaNume.length);
-        indexPrenume = rand.nextInt(listaPrenume.length);
-        User u5 = new User(listaNume[indexNume], listaPrenume[indexPrenume]);
-        UserRepo.save(u5);
+            // Add friendships for each user
+            for (int j = i + 1; j < users.size(); j++) {
+                User friend = users.get(j);
 
-        indexNume = rand.nextInt(listaNume.length);
-        indexPrenume = rand.nextInt(listaPrenume.length);
-        User u6 = new User(listaNume[indexNume], listaPrenume[indexPrenume]);
-        UserRepo.save(u6);
+                // Check if they are not already friends before making a new friendship
+                if (!areAlreadyFriends(user, friend)) {
+                    System.out.println("Added friendship between " + user.getFirstName() + " " + user.getLastName() +
+                            " and " + friend.getFirstName() + " " + friend.getLastName());
 
-        indexNume = rand.nextInt(listaNume.length);
-        indexPrenume = rand.nextInt(listaPrenume.length);
-        User u7 = new User(listaNume[indexNume], listaPrenume[indexPrenume]);
-        UserRepo.save(u7);
-
-        indexNume = rand.nextInt(listaNume.length);
-        indexPrenume = rand.nextInt(listaPrenume.length);
-        User u8 = new User(listaNume[indexNume], listaPrenume[indexPrenume]);
-        UserRepo.save(u8);
-
-        indexNume = rand.nextInt(listaNume.length);
-        indexPrenume = rand.nextInt(listaPrenume.length);
-        User u9 = new User(listaNume[indexNume], listaPrenume[indexPrenume]);
-        UserRepo.save(u9);
-
-        addFriendShip(u1.getFirstName(), u1.getLastName(), u3.getFirstName(), u3.getLastName());
-        addFriendShip(u5.getFirstName(), u5.getLastName(), u3.getFirstName(), u3.getLastName());
-        addFriendShip(u1.getFirstName(), u1.getLastName(), u7.getFirstName(), u7.getLastName());
-        addFriendShip(u8.getFirstName(), u8.getLastName(), u9.getFirstName(), u9.getLastName());
-
+                    addFriendShip(user.getFirstName(), user.getLastName(), friend.getFirstName(), friend.getLastName());
+                }
+            }
+        }
     }
 
-    // Add this method to the Service class
+    /**
+     * Generates a random password (placeholder method).
+     *
+     * @return A randomly generated password.
+     */
+    private String generateRandomPassword() {
+        // Logic to generate a random password (you can customize this based on your requirements)
+        return "Pass";
+    }
+
+    /**
+     * Retrieves users with a minimum number of friendships.
+     *
+     * @param n The minimum number of friendships.
+     * @return A list of users with at least 'n' friendships.
+     */
     public List<User> numarMinimPrieteni(int n) {
         Iterable<User> users = UserRepo.findAll();
 
@@ -330,12 +431,18 @@ public class Service implements Observable<UserChangeEvent> {
         return usersWithMinFriends;
     }
 
+    /**
+     * Retrieves accepted friends for a given user.
+     *
+     * @param user The user to find accepted friends for.
+     * @return A list of accepted friends for the given user.
+     */
 
     public List<User> getAcceptedFriendsOfUser(User user) {
-        // Obține toate prieteniile
+        // Getting all friendships
         Iterable<FriendShip> friendships = FriendShipRepo.findAll();
 
-        // Filtrăm prieteniile pentru a obține doar cele ACCEPTED în care user-ul dat este implicat
+        // Filtering friendships to obtain only those ACCEPTED where the given user is involved
         List<User> acceptedFriends = StreamSupport.stream(friendships.spliterator(), false)
                 .filter(friendship ->
                         (friendship.getUser1().equals(user) || friendship.getUser2().equals(user))
@@ -347,15 +454,24 @@ public class Service implements Observable<UserChangeEvent> {
         return acceptedFriends;
     }
 
-
-
+    /**
+     * Retrieves the number of friendships for a given user.
+     * @param user The user to count friendships for.
+     * @return The number of friendships for the given user.
+     */
     public int numarPrieteni(User user) {
         return (int) StreamSupport.stream(FriendShipRepo.findAll().spliterator(), false)
                 .filter(f -> f.getUser1().equals(user) || f.getUser2().equals(user))
                 .count();
     }
 
-
+    /**
+     * Retrieves friendships for a given user in a specific month
+     * @param n The last name of the user.
+     * @param p The first name of the user.
+     * @param month The month to filter friendships.
+     * @return A list of friends for the user in the specified month.
+     */
     public List<User> FriendsFromFunction(String n, String p, Integer month) {
         ArrayList<User> users = new ArrayList<>();
         Iterable<FriendShip> prt = FriendShipRepo.findAll();
@@ -371,6 +487,13 @@ public class Service implements Observable<UserChangeEvent> {
         return users;
     }
 
+
+    /**
+     * Retrieves users with a first name containing a specific string.
+     *
+     * @param find The string to search for in user first names.
+     * @return A list of users with first names containing the specified string.
+     */
     public List<User> stringSearch(String find) {
         ArrayList<User> users = new ArrayList<>();
         Iterable<User> usr = UserRepo.findAll();
@@ -383,29 +506,56 @@ public class Service implements Observable<UserChangeEvent> {
     }
 
 
-
+    /**
+     * Adds an observer for user change events.
+     *
+     * @param o The observer to be added.
+     */
     @Override
-    public void addObserver(Observer<UserChangeEvent> o) {observers.add(o);
+    public void addObserver(Observer<UserChangeEvent> o) {
+        observers.add(o);
 
     }
 
+    /**
+     * Removes an observer for user change events.
+     *
+     * @param o The observer to be removed.
+     */
     @Override
-    public void removeObserver(Observer<UserChangeEvent> o) {observers.remove(o);
+    public void removeObserver(Observer<UserChangeEvent> o) {
+        observers.remove(o);
 
     }
 
+    /**
+     * Notifies all registered observers about a user change event.
+     *
+     * @param t The user change event.
+     */
     @Override
     public void notify(UserChangeEvent t) {
-        observers.forEach(o->o.update(t));
+        observers.forEach(o -> o.update(t));
 
     }
 
-    public void acceptFriendship(String n1, String p1, String n2, String p2)
-    {
-        removeFriendShip(n1,p1,n2,p2);
-        addFriendShip(n1,p1,n2,p2);
+    /**
+     * Accepts a friendship request between two pairs of users.
+     *
+     * @param n1, p1 The first user's first and last names.
+     * @param n2, p2 The second user's first and last names.
+     */
+    public void acceptFriendship(String n1, String p1, String n2, String p2) {
+        removeFriendShip(n1, p1, n2, p2);
+        addFriendShip(n1, p1, n2, p2);
     }
 
+    /**
+     * Declines a friendship request between two pairs of users.
+     *
+     * @param n1, p1 The first user's first and last names.
+     * @param n2, p2 The second user's first and last names.
+     */
     public void declineFriendRequest(String n1, String p1, String n2, String p2) {
         removeFriendShip(n1, p1, n2, p2);
 
@@ -432,6 +582,12 @@ public class Service implements Observable<UserChangeEvent> {
         }
     }
 
+    /**
+     * Creates a friendship request between two pairs of users.
+     *
+     * @param n1, p1 The first user's first and last names.
+     * @param n2, p2 The second user's first and last names.
+     */
     public void createFriendRequest(String n1, String p1, String n2, String p2) {
         try {
             User u1 = getUserByNumePrenume(n1, p1);
@@ -456,7 +612,13 @@ public class Service implements Observable<UserChangeEvent> {
         }
     }
 
-
+    /**
+     * Checks if two users are already friends based on existing friendships.
+     *
+     * @param u1 The first user.
+     * @param u2 The second user.
+     * @return True if users are already friends, false otherwise.
+     */
     public boolean areAlreadyFriends(User u1, User u2) {
         // Retrieve existing friendships from the repository
         Iterable<FriendShip> existingFriendships = FriendShipRepo.findAll();
@@ -474,6 +636,13 @@ public class Service implements Observable<UserChangeEvent> {
         return false; // Users are not already friends
     }
 
+    /**
+     * Checks if there are pending friend requests between two users.
+     *
+     * @param u1 The first user.
+     * @param u2 The second user.
+     * @return True if there are pending friend requests, false otherwise.
+     */
     public boolean areFriendRequestsPending(User u1, User u2) {
         // Retrieve existing friend requests from the repository
         Iterable<FriendShip> existingFriendRequests = FriendShipRepo.findAll();
@@ -489,5 +658,18 @@ public class Service implements Observable<UserChangeEvent> {
         }
 
         return false; // There are no pending friend requests
+    }
+
+    /**
+     * Retrieves a user based on their email address.
+     *
+     * @param email The email address of the user.
+     * @return The user corresponding to the given email or null if not found.
+     */
+    public User getUserByEmail(String email) {
+        return printUsers().stream()
+                .filter(u -> u.getEmail().equals(email))
+                .findFirst()
+                .orElse(null);
     }
 }

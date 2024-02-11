@@ -4,6 +4,11 @@ package com.socialnetwork.lab78.domain;
 import java.io.Serializable;
 import java.util.Objects;
 
+/**
+ * An abstract base class representing entities in the social network domain.
+ *
+ * @param <ID> The type of the entity's identifier.
+ */
 public class Entity<ID> implements Serializable {
     protected ID id;
 

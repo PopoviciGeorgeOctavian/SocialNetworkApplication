@@ -11,12 +11,26 @@ import java.util.ArrayList;
 import java.util.Optional;
 import java.util.UUID;
 
+
+/**
+ * FriendShipDBRepository is a repository implementation for storing and retrieving FriendShip entities in a relational database.
+ *
+ * @param <UUID>      The type of the entity ID.
+ * @param <FriendShip> The type of the FriendShip entity.
+ */
 public class FriendShipDBRepository implements Repository<UUID, FriendShip> {
 
     private String url;
     private String user;
     private String password;
 
+    /**
+     * Constructs a new FriendShipDBRepository with the specified database connection details.
+     *
+     * @param url      The URL of the database.
+     * @param user     The username for database access.
+     * @param password The password for database access.
+     */
     public FriendShipDBRepository(String url, String user, String password) {
         this.url = url;
         this.user = user;
@@ -25,9 +39,9 @@ public class FriendShipDBRepository implements Repository<UUID, FriendShip> {
 
     @Override
     public Optional<FriendShip> findOne(UUID id) {
+        // Retrieve and return a FriendShip entity from the database based on the specified ID
         try (Connection connection = DriverManager.getConnection(url, user, password);
              PreparedStatement statement = connection.prepareStatement("SELECT * FROM Prietenii WHERE UUID=?");) {
-            //statement.setLong(1,id);
             statement.setObject(1, id);
             ResultSet r = statement.executeQuery();
             if (r.next()) {
@@ -50,6 +64,7 @@ public class FriendShipDBRepository implements Repository<UUID, FriendShip> {
 
     @Override
     public Iterable<FriendShip> findAll() {
+        // Retrieve and return all FriendShip entities from the database
         try (Connection connection = DriverManager.getConnection(url, user, password);
              PreparedStatement statement = connection.prepareStatement("SELECT * FROM Prietenii")) {
             ArrayList<FriendShip> list = new ArrayList<>();
@@ -76,6 +91,7 @@ public class FriendShipDBRepository implements Repository<UUID, FriendShip> {
 
     @Override
     public Optional<FriendShip> save(FriendShip entity) {
+        // Save a FriendShip entity to the database and return an Optional based on the success of the operation
         try (Connection connection = DriverManager.getConnection(url, user, password);
              PreparedStatement statement = connection.prepareStatement("INSERT INTO Prietenii(UUID,FirstNameU1,LastNameU1,FirstNameU2,LastNameU2,friendsFrom,idu1,idu2,status) VALUES (?,?,?,?,?,?,?,?,?)");) {
             statement.setObject(1, entity.getId());
@@ -96,6 +112,7 @@ public class FriendShipDBRepository implements Repository<UUID, FriendShip> {
 
     @Override
     public Optional<FriendShip> delete(UUID uuid) {
+        // Delete a FriendShip entity from the database based on the specified ID and return an Optional based on the success of the operation
         try (Connection connection = DriverManager.getConnection(url, user, password);
              PreparedStatement statement = connection.prepareStatement("DELETE FROM Prietenii WHERE UUID = ?");) {
             var cv = findOne(uuid);
@@ -109,6 +126,7 @@ public class FriendShipDBRepository implements Repository<UUID, FriendShip> {
 
     @Override
     public Optional<FriendShip> update(FriendShip entity) {
+        // Update a FriendShip entity in the database and return an Optional based on the success of the operation
         try (Connection connection = DriverManager.getConnection(url, user, password);
              PreparedStatement statement = connection.prepareStatement("UPDATE Prietenii SET FirstNameU1 = ?, LastNameU1 = ?, FirstNameU2 = ?, LastNameU2 = ?, idu1 = ?, idu2 = ?, friendsfrom =? WHERE UUID = ?");) {
             statement.setString(1, entity.getUser1().getFirstName());

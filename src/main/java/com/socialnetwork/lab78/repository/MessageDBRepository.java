@@ -10,6 +10,9 @@ import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
+/**
+ * MessageDBRepository is a repository implementation that interacts with a relational database to store and retrieve Message entities.
+ */
 public class MessageDBRepository implements Repository<UUID, Message> {
 
     private UserDBRepository userRepo;
@@ -17,7 +20,15 @@ public class MessageDBRepository implements Repository<UUID, Message> {
     private String user;
     private String password;
 
-    public MessageDBRepository(String url, String user, String password,UserDBRepository userRepo) {
+    /**
+     * Constructs a new MessageDBRepository with the specified database connection details and a UserDBRepository for handling User entities.
+     *
+     * @param url      The URL of the database.
+     * @param user     The username for the database connection.
+     * @param password The password for the database connection.
+     * @param userRepo The UserDBRepository for handling User entities.
+     */
+    public MessageDBRepository(String url, String user, String password, UserDBRepository userRepo) {
         this.url = url;
         this.user = user;
         this.password = password;
@@ -27,8 +38,7 @@ public class MessageDBRepository implements Repository<UUID, Message> {
     @Override
     public Optional<Message> findOne(UUID id) {
         try (Connection connection = DriverManager.getConnection(url, user, password);
-             PreparedStatement statement = connection.prepareStatement("SELECT * FROM messages WHERE id=?");) {
-            //statement.setLong(1,id);
+             PreparedStatement statement = connection.prepareStatement("SELECT * FROM messages WHERE id=?")) {
             statement.setObject(1, id);
             ResultSet r = statement.executeQuery();
             if (r.next()) {
@@ -50,8 +60,8 @@ public class MessageDBRepository implements Repository<UUID, Message> {
                 UUID id_reply = (UUID) r.getObject("id_reply");
                 String mesaj = r.getString("mesaj");
                 LocalDateTime date = r.getTimestamp("datamesaj").toLocalDateTime();
-                Message m = new Message(id,userRepo.findOne(id_from).get(), listUser, mesaj, date);
-                if(id_reply != null) {
+                Message m = new Message(id, userRepo.findOne(id_from).get(), listUser, mesaj, date);
+                if (id_reply != null) {
                     m.setReply(findOne(id_reply).get());
                 }
                 m.setId(id);
@@ -65,10 +75,9 @@ public class MessageDBRepository implements Repository<UUID, Message> {
 
     @Override
     public Iterable<Message> findAll() {
-        ArrayList<Message> mesaje = new ArrayList<>();
+        ArrayList<Message> messages = new ArrayList<>();
         try (Connection connection = DriverManager.getConnection(url, user, password);
-             PreparedStatement statement = connection.prepareStatement(
-                     "select * from messages;");) {
+             PreparedStatement statement = connection.prepareStatement("SELECT * FROM messages;")) {
             ResultSet resultSet = statement.executeQuery();
             while (resultSet.next()) {
                 UUID id = (UUID) resultSet.getObject("id");
@@ -90,14 +99,14 @@ public class MessageDBRepository implements Repository<UUID, Message> {
                 UUID id_reply = (UUID) resultSet.getObject("id_reply");
                 String mesaj = resultSet.getString("mesaj");
                 LocalDateTime date = resultSet.getTimestamp("datamesaj").toLocalDateTime();
-                Message m = new Message(id,userRepo.findOne(id_from).get(), listUser, mesaj, date);
-                if(id_reply != null)  {
+                Message m = new Message(id, userRepo.findOne(id_from).get(), listUser, mesaj, date);
+                if (id_reply != null) {
                     m.setReply(findOne(id_reply).get());
                 }
                 m.setId(id);
-                mesaje.add(m);
+                messages.add(m);
             }
-            return mesaje;
+            return messages;
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
@@ -106,9 +115,8 @@ public class MessageDBRepository implements Repository<UUID, Message> {
     @Override
     public Optional<Message> save(Message entity) {
         try (Connection connection = DriverManager.getConnection(url, user, password);
-             PreparedStatement statement =
-                     connection.prepareStatement("insert into messages(id,from_id,to_id,mesaj,datamesaj,id_reply)values (?,?,?,?,?,?);");) {
-            statement.setObject(1,entity.getId());
+             PreparedStatement statement = connection.prepareStatement("INSERT INTO messages(id,from_id,to_id,mesaj,datamesaj,id_reply) VALUES (?,?,?,?,?,?);")) {
+            statement.setObject(1, entity.getId());
             statement.setObject(2, entity.getFrom().getId());
 
             String toUUIDs = entity.getTo().stream()
@@ -126,13 +134,6 @@ public class MessageDBRepository implements Repository<UUID, Message> {
 
             statement.executeUpdate();
 
-            // Retrieve the generated keys to get the new message ID
-            //ResultSet generatedKeys = statement.getGeneratedKeys();
-           // if (generatedKeys.next()) {
-            //    UUID generatedId = (UUID) generatedKeys.getObject(1);
-             //   entity.setId(generatedId);
-            //}
-
             return Optional.of(entity);
 
         } catch (SQLException e) {
@@ -144,11 +145,11 @@ public class MessageDBRepository implements Repository<UUID, Message> {
     public Optional<Message> delete(UUID id) {
         return Optional.empty();
     }
+
     @Override
     public Optional<Message> update(Message entity) {
         try (Connection connection = DriverManager.getConnection(url, user, password);
-             PreparedStatement statement = connection.prepareStatement(
-                     "update messages set id_reply = ? where id = ?");) {
+             PreparedStatement statement = connection.prepareStatement("UPDATE messages SET id_reply = ? WHERE id = ?");) {
             statement.setObject(1, entity.getReply().getId());
             statement.setObject(2, entity.getId());
             statement.executeUpdate();
@@ -157,6 +158,5 @@ public class MessageDBRepository implements Repository<UUID, Message> {
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
-
     }
 }

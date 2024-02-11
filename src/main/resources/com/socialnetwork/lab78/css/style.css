@@ -1,37 +1,46 @@
 VBox {
-    -fx-background-color: #f4f4f4; /* gri deschis */
-    -fx-padding: 10;
+    -fx-background-color: #f8f8f8; /* Elegant light gray background */
+    -fx-padding: 20;
 }
 
 TableView {
     -fx-pref-height: 400;
-    -fx-max-width: 400;
+    -fx-max-width: 600;
+    -fx-background-color: #ffffff; /* Clean white table background */
+    -fx-border-color: #e0e0e0; /* Light border color */
+    -fx-border-width: 1;
+    -fx-border-radius: 5; /* Rounded corners */
+    -fx-box-border: transparent; /* Transparent row borders for a seamless look */
 }
 
 HBox {
-    -fx-spacing: 10;
+    -fx-spacing: 15;
 }
 
 Label {
     -fx-font-weight: bold;
+    -fx-text-fill: #333333; /* Dark gray text */
 }
 
 TextField {
     -fx-font-size: 14;
+    -fx-border-color: #cccccc; /* Light border color */
+    -fx-border-width: 1;
+    -fx-border-radius: 5; /* Rounded corners */
+    -fx-background-color: #f5f5f5; /* Light gray background */
 }
 
 Button {
-    -fx-background-color: #4CAF50; /* verde */
+    -fx-background-color: #4CAF50; /* Professional green button background */
     -fx-text-fill: white;
     -fx-font-weight: bold;
+    -fx-border-radius: 5; /* Rounded corners */
 }
 
-/* Culori adiționale pentru experimentare */
-
 Button:hover {
-    -fx-background-color: #45a049; /* verde mai închis la hover */
+    -fx-background-color: #45a049; /* Darker green on hover */
 }
 
 Button:pressed {
-    -fx-background-color: #36723e; /* verde închis la apăsare */
+    -fx-background-color: #36723e; /* Darkest green when pressed */
 }

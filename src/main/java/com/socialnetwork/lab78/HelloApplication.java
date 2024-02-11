@@ -20,23 +20,40 @@ import javafx.stage.Stage;
 import java.io.IOException;
 import java.util.UUID;
 
+/**
+ * The HelloApplication class serves as the entry point for the JavaFX application.
+ * It initializes the necessary repositories, services, and controllers for user authentication and interaction.
+ */
 public class HelloApplication extends Application {
 
+    /**
+     * The start method is called when the JavaFX application is launched.
+     *
+     * @param stage The primary stage for the application.
+     * @throws Exception If an error occurs during the application startup.
+     */
     @Override
     public void start(Stage stage) throws Exception {
+        // Initialize repositories
         UserDBRepository userRepo = new UserDBRepository("jdbc:postgresql://localhost:5432/socialnetwork", "postgres", "George100");
         Repository<UUID, FriendShip> friendshipRepo = new FriendShipDBRepository("jdbc:postgresql://localhost:5432/socialnetwork", "postgres", "George100");
-        Repository<UUID, Message>  messageRepository = new MessageDBRepository("jdbc:postgresql://localhost:5432/socialnetwork", "postgres", "George100", userRepo);
+        Repository<UUID, Message> messageRepository = new MessageDBRepository("jdbc:postgresql://localhost:5432/socialnetwork", "postgres", "George100", userRepo);
+
+        // Initialize services
         Service service = new Service(userRepo, friendshipRepo);
-        MessageService messageService = new MessageService(messageRepository,userRepo);
+        MessageService messageService = new MessageService(messageRepository, userRepo);
+
         try {
+            // Load the LogIn.fxml view
             FXMLLoader fxmlLoader = new FXMLLoader(HelloApplication.class.getResource("/com/socialnetwork/lab78/views/LogIn.fxml"));
             Scene scene = new Scene(fxmlLoader.load());
 
+            // Set up the LogInController with the initialized services
             LogInController controller = fxmlLoader.getController();
             controller.setService(service);
             controller.setMessageService(messageService);
 
+            // Set up the primary stage
             stage.setTitle("App");
             stage.setScene(scene);
             stage.show();
@@ -44,9 +61,13 @@ public class HelloApplication extends Application {
         } catch (IOException e) {
             e.printStackTrace();
         }
-
-
     }
+
+    /**
+     * The main method is the entry point of the application.
+     *
+     * @param args Command-line arguments passed to the application.
+     */
     public static void main(String[] args) {
         launch();
     }

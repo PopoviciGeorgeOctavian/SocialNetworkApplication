@@ -25,7 +25,11 @@ public class UI implements UserInterface{
         String nume=myObj.nextLine();
         System.out.println("\nPreume: ");
         String prenume=myObj.nextLine();
-        service.addUser(nume,prenume);
+        System.out.println("\nEmail: ");
+        String email=myObj.nextLine();
+        System.out.println("\nPassword: ");
+        String password=myObj.nextLine();
+        service.addUser(nume,prenume,email,password);
 
     }
     public void deleteUser(){
