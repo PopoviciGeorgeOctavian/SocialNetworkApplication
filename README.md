@@ -23,8 +23,6 @@ Technologies Used
 
     JavaFX: Graphical user interface.
     ControlsFX: UI controls library.
-    FormsFX: Form creation library.
-    BootstrapFX: Bootstrap-themed components.
     PostgreSQL: Database for user and friendship data.
 
 Project Structure
